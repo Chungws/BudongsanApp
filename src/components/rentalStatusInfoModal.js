@@ -6,7 +6,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogActions from '@material-ui/core/DialogActions';
 import Typography from '@material-ui/core/Typography';
 
-class GoodRentalStatusInfo extends Component {
+class RentalStatusInfoModal extends Component {
     constructor(props) {
       super(props);
       this.state = {
@@ -55,4 +55,4 @@ class GoodRentalStatusInfo extends Component {
     }
   }
       
-  export default GoodRentalStatusInfo;
+  export default RentalStatusInfoModal;

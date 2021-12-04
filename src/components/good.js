@@ -3,10 +3,10 @@ import { makeStyles } from '@material-ui/core/styles';
 import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
 import Button from '@material-ui/core/Button';
-import GoodDelete from './goodDelete';
-import GoodAreaInfo from './goodAreaInfo';
-import GoodPriceInfo from './goodPriceInfo';
-import GoodRentalStatusInfo from './goodRentalStatusInfo';
+import DeleteWarningModal from './deleteWarningModal';
+import AreaInfoModal from './areaInfoModal';
+import PriceInfoModal from './priceInfoModal';
+import RentalStatusInfoModal from './rentalStatusInfoModal';
 import {useHistory} from "react-router";
 
 
@@ -35,17 +35,17 @@ export default function Good(props) {
         <TableCell align="center" width="120">{props.row.division}</TableCell>
         <TableCell align="center" width="220">{props.row.address}</TableCell>
         <TableCell align="center" width="100">{props.row.yongdo}</TableCell>
-        <TableCell align="center" width="100"><GoodAreaInfo area = {props.row.area}/></TableCell>
-        <TableCell align="center" width="110"><GoodPriceInfo price = {props.row.price}/></TableCell> 
+        <TableCell align="center" width="100"><AreaInfoModal area = {props.row.area}/></TableCell>
+        <TableCell align="center" width="110"><PriceInfoModal price = {props.row.price}/></TableCell> 
         <TableCell align="center" width="120">{Number(props.row.deposit)}</TableCell>
         <TableCell align="center" width="100">{Number(props.row.monthly)}</TableCell>
-        <TableCell align="center" width="120"><GoodRentalStatusInfo rentalstatus = {props.row.rentalstatus}/></TableCell>
+        <TableCell align="center" width="120"><RentalStatusInfoModal rentalstatus = {props.row.rentalstatus}/></TableCell>
         <TableCell align="center" width="100">{props.row.estate}</TableCell>
         <TableCell align="center" width="200">{props.row.etc}</TableCell>
         <TableCell width="30">
-          <GoodDelete stateRefresh={props.stateRefresh} address={props.row.address}>
+          <DeleteWarningModal stateRefresh={props.stateRefresh} address={props.row.address}>
             삭제
-          </GoodDelete>
+          </DeleteWarningModal>
         </TableCell>
         <TableCell width="30">
           <Button size="small" onClick={() => {history.push({

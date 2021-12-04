@@ -2,7 +2,7 @@ import React, {Component} from 'react';
 import Styled from 'styled-components';
 import { NavLink, withRouter } from 'react-router-dom';
 import { compose } from 'recompose';
-import {auth } from "../firebase";
+import { auth } from "../firebase";
 
 
 const Wrapper = Styled.div`
@@ -155,12 +155,6 @@ class MainPageBase extends Component{
               <NavLink exact activeClassName="active" to="/goods" style={{ textDecoration: 'none' }}>
                 <LinkButton bgColor={"#f4abc4"} fontColor={"#333456"}>
                   <LinkText>매물관리</LinkText>
-                </LinkButton>
-              </NavLink>
-              <div style={{width: 30}} />
-              <NavLink exact activeClassName="active" to="/clients" style={{ textDecoration: 'none' }}>
-                <LinkButton bgColor={"#f4abc4"} fontColor={"#333456"}>
-                  <LinkText>고객관리</LinkText>
                 </LinkButton>
               </NavLink>
             </div> : 

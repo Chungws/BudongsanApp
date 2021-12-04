@@ -8,7 +8,7 @@ import DialogActions from '@material-ui/core/DialogActions';
 import Typography from '@material-ui/core/Typography';
 
 
-class ClientDelete extends Component {
+class DeleteWarningModal extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -16,8 +16,8 @@ class ClientDelete extends Component {
     }
   }
   
-  deleteGood(name){
-    firebase.database().ref(`clients/${name}`).remove()
+  deleteGood(address){
+    firebase.database().ref(`goods/${address}`).remove()
     this.props.stateRefresh();
   }
 
@@ -45,7 +45,7 @@ class ClientDelete extends Component {
         </DialogTitle>
         <DialogContent>
           <Typography gutterBottom>
-            선택한 고객이 삭제됩니다.
+            선택한 매물이 삭제됩니다.
           </Typography>
         </DialogContent>
         <DialogActions>
@@ -60,5 +60,5 @@ class ClientDelete extends Component {
   }
 }
     
-export default ClientDelete;
+export default DeleteWarningModal;
     
