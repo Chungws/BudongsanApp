@@ -105,12 +105,13 @@ class MainPageBase extends Component{
       this.setState({error});
     }
     this.setState({state:false});
-  };
+  }
   
   onLogOutClick = async () =>{
     await auth.signOut();
     this.setState({state:true});
-  };
+  }
+
   render(){
     return(
       <Wrapper>
@@ -174,9 +175,10 @@ class MainPageBase extends Component{
       </Wrapper>
     );
   }
+
   onChange = event => {
     this.setState({ [event.target.name]: event.target.value });
-  };
+  }
 }
 const MainPage = compose(
   withRouter

@@ -29,7 +29,7 @@ class AreaInfoModal extends Component {
     render() {
       return (
         <div>
-        <Button onClick={this.handleClickOpen} >{Number(this.props.area.landarea)}</Button>
+        <Button onClick={this.handleClickOpen} align='right'>{Number(this.props.area.landarea)}</Button>
         <Dialog onClose={this.handleClose} open={this.state.open} fullWidth="120">
           <DialogTitle onClose={this.handleClose}>
             추가 정보

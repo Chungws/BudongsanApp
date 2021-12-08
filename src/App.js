@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Switch, Route } from 'react-router-dom';
 import MainPage from '../src/pages/main';
-import GoodsPage from '../src/pages/goods';
+import GoodsPage from '../src/pages/goodsDatagrid';
 import GoodsCreatePage from '../src/pages/goodsCreate';
 import GoodsUpdatePage from '../src/pages/goodsUpdate';
 

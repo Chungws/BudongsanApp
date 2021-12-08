@@ -6,6 +6,7 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogActions from '@material-ui/core/DialogActions';
 import Typography from '@material-ui/core/Typography';
+import DeleteIcon from '@mui/icons-material/DeleteOutlined';
 
 
 class DeleteWarningModal extends Component {
@@ -16,18 +17,26 @@ class DeleteWarningModal extends Component {
     }
   }
   
-  deleteGood(address){
-    firebase.database().ref(`goods/${address}`).remove()
-    this.props.stateRefresh();
+  deleteGood = (addresses) => {
+    let promises = [];
+    
+    addresses.map((address) => {
+      promises.push(firebase.database().ref(`goods/${address}`).remove())
+    })
+
+    return Promise.all(promises)
+    .then(()=> {
+      this.props.stateRefresh();
+    })
   }
 
-  handleClickOpen=()=> {
+  handleClickOpen = () => {
     this.setState({
       open: true
     });
   }
 
-  handleClose=()=> {
+  handleClose = () => {
     this.setState({
       open: false
     })
@@ -35,27 +44,27 @@ class DeleteWarningModal extends Component {
 
   render() {
     return (
-      <div>
-      <Button variant="contained" color="secondary" onClick={this.handleClickOpen} size="small">
-        삭제
-      </Button>
-      <Dialog onClose={this.handleClose} open={this.state.open}>
-        <DialogTitle onClose={this.handleClose}>
-          삭제 경고
-        </DialogTitle>
-        <DialogContent>
-          <Typography gutterBottom>
-            선택한 매물이 삭제됩니다.
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={(e) => {this.deleteGood(this.props.address)}}>
-            삭제
-          </Button>
-          <Button variant="outlined" color="primary" onClick={this.handleClose}>닫기</Button>
-        </DialogActions>
-      </Dialog>
-      </div>
+      <>
+        <Button color="primary" startIcon={<DeleteIcon />} style={{ fontSize: '13px' }} disabled={this.props.disabled} onClick={this.handleClickOpen}>
+          매물 삭제
+        </Button>
+        <Dialog onClose={this.handleClose} open={this.state.open}>
+          <DialogTitle onClose={this.handleClose}>
+            삭제 경고
+          </DialogTitle>
+          <DialogContent>
+            <Typography gutterBottom>
+              선택한 매물들이 삭제됩니다.
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => {this.deleteGood(this.props.addresses)}}>
+              삭제
+            </Button>
+            <Button variant="outlined" color="primary" onClick={this.handleClose}>닫기</Button>
+          </DialogActions>
+        </Dialog>
+      </>
     )
   }
 }
