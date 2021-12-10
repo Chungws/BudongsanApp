@@ -1,10 +1,10 @@
 import React, {Component} from 'react';
-import Button from '@material-ui/core/Button';
-import Dialog from '@material-ui/core/Dialog';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogActions from '@material-ui/core/DialogActions';
-import Typography from '@material-ui/core/Typography';
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import Typography from '@mui/material/Typography';
 
 class AreaInfoModal extends Component {
     constructor(props) {
@@ -29,8 +29,8 @@ class AreaInfoModal extends Component {
     render() {
       return (
         <div>
-        <Button onClick={this.handleClickOpen} align='right'>{Number(this.props.area.landarea)}</Button>
-        <Dialog onClose={this.handleClose} open={this.state.open} fullWidth="120">
+        <Button color="inherit" onClick={this.handleClickOpen} align='right'>{Number(this.props.area.landarea)}</Button>
+        <Dialog onClose={this.handleClose} open={this.state.open} fullWidth>
           <DialogTitle onClose={this.handleClose}>
             추가 정보
           </DialogTitle>

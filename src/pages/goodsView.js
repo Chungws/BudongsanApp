@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {useHistory} from "react-router";
+import { useHistory } from "react-router";
 import { withRouter, NavLink } from 'react-router-dom';
 import { compose } from 'recompose';
 import Styled from 'styled-components';
@@ -10,10 +10,15 @@ import Button from '@mui/material/Button';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
+import Paper from '@mui/material/Paper';
+import Popper from '@mui/material/Popper';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 import {
   DataGrid,
   GridToolbarContainer,
-  GridToolbarDensitySelector
+  GridToolbarDensitySelector,
+  koKR
 } from '@mui/x-data-grid';
 import ClearIcon from '@mui/icons-material/Clear';
 import SearchIcon from '@mui/icons-material/Search';
@@ -21,6 +26,7 @@ import AreaInfoModal from '../components/areaInfoModal';
 import PriceInfoModal from '../components/priceInfoModal';
 import RentalStatusInfoModal from '../components/rentalStatusInfoModal';
 import DeleteButton from '../components/deleteWarningModal';
+import ImageInfoModal from '../components/imageInfoModal';
 
 const Wrapper = Styled.div`
   width: 100%;
@@ -39,10 +45,10 @@ const Wrapper = Styled.div`
 
 const columns = [
   { field: 'date', headerName: '날짜' , width: 100 },
-  { field: 'division', headerName: '구분' , width: 120 },
-  { field: 'address', headerName: '소재지' , width: 220 },
+  { field: 'division', headerName: '구분' , width: 120, renderCell: renderCellExpand },
+  { field: 'address', headerName: '소재지' , width: 220, renderCell: renderCellExpand },
   { field: 'yongdo', headerName: '용도지역' , width: 100 },
-  { field: 'area', headerName: '대지' , width: 100, renderCell: (params) => ( <AreaInfoModal area = {params.value}/> ), 
+  { field: 'area', headerName: '대지' , width: 100, align: 'center', headerAlign: 'center', renderCell: (params) => ( <AreaInfoModal area = {params.value}/> ), 
     sortComparator: (v1, v2, param1, param2) => (
       param1.api.getCellValue(param1.id, 'area').landarea -
       param2.api.getCellValue(param2.id, 'area').landarea
@@ -59,12 +65,130 @@ const columns = [
   { field: 'monthly', headerName: '월세' , width: 100, align: 'right', headerAlign: 'right' },
   { field: 'rentalstatus', headerName: '임대현황' , width: 120, align: 'center', headerAlign: 'center', sortable: false,
     renderCell: (params) => ( <RentalStatusInfoModal rentalstatus = {params.value}/> ) },
-  { field: 'estate', headerName: '부동산', width: 130, sortable: false },
-  { field: 'etc', headerName: '비고' , width: 200, sortable: false },
+  { field: 'estate', headerName: '부동산', width: 100, sortable: false, renderCell: renderCellExpand },
+  { field: 'etc', headerName: '비고' , width: 200, sortable: false, renderCell: renderCellExpand },
+  { field: 'data', headerName: '자료', width: 80, align: 'center', headerAlign: 'center', sortable: false, 
+    renderCell: (params) => ( <ImageInfoModal address={params.value}/> )}
 ];
 
 function escapeRegExp(value) {
   return value.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+}
+
+function isOverflown(element) {
+  return (
+    element.scrollHeight > element.clientHeight ||
+    element.scrollWidth > element.clientWidth
+  );
+}
+
+const theme = createTheme({
+  typography: {
+    fontFamily: [
+      'Nanum Gothic'
+    ].join(','),
+  },
+  palette: {
+    neutral: {
+      main: '#64748B',
+      contrastText: '#fff',
+    },
+  },
+});
+
+const GridCellExpand = React.memo(function GridCellExpand(props) {
+  const { width, value } = props;
+  const wrapper = React.useRef(null);
+  const cellDiv = React.useRef(null);
+  const cellValue = React.useRef(null);
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const [showFullCell, setShowFullCell] = React.useState(false);
+  const [showPopper, setShowPopper] = React.useState(false);
+
+  const handleMouseEnter = () => {
+    const isCurrentlyOverflown = isOverflown(cellValue.current);
+    setShowPopper(isCurrentlyOverflown);
+    setAnchorEl(cellDiv.current);
+    setShowFullCell(true);
+  };
+
+  const handleMouseLeave = () => {
+    setShowFullCell(false);
+  };
+
+  React.useEffect(() => {
+    if (!showFullCell) {
+      return undefined;
+    }
+
+    function handleKeyDown(nativeEvent) {
+      // IE11, Edge (prior to using Bink?) use 'Esc'
+      if (nativeEvent.key === 'Escape' || nativeEvent.key === 'Esc') {
+        setShowFullCell(false);
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [setShowFullCell, showFullCell]);
+
+  return (
+    <Box
+      ref={wrapper}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      sx={{
+        alignItems: 'center',
+        lineHeight: '24px',
+        width: 1,
+        height: 1,
+        position: 'relative',
+        display: 'flex',
+      }}
+    >
+      <Box
+        ref={cellDiv}
+        sx={{
+          height: 1,
+          width,
+          display: 'block',
+          position: 'absolute',
+          top: 0,
+        }}
+      />
+      <Box
+        ref={cellValue}
+        sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+      >
+        {value}
+      </Box>
+      {showPopper && (
+        <Popper
+          open={showFullCell && anchorEl !== null}
+          anchorEl={anchorEl}
+          style={{ width, marginLeft: -17 }}
+        >
+          <Paper
+            elevation={1}
+            style={{ minHeight: wrapper.current.offsetHeight - 3 }}
+          >
+            <Typography variant="body2" style={{ padding: 8 }}>
+              {value}
+            </Typography>
+          </Paper>
+        </Popper>
+      )}
+    </Box>
+  );
+});
+
+function renderCellExpand(params) {
+  return (
+    <GridCellExpand value={params.value || ''} width={params.colDef.computedWidth} />
+  );
 }
 
 function CustomToolbar(props) {
@@ -72,7 +196,6 @@ function CustomToolbar(props) {
   let isButtonEnable = props.selectedGoods.length === 0 ? false : true;
 
   const stateRefresh = () => {
-    console.log(props.selectedGoods[0])
     window.location.reload()
   }
 
@@ -99,7 +222,7 @@ function CustomToolbar(props) {
         >
           매물 수정
         </Button>
-        <DeleteButton stateRefresh={stateRefresh} addresses={props.selectedGoods} disabled={!isButtonEnable}/>
+        <DeleteButton refresh={props.getDataFromFirebase} addresses={props.selectedGoods} disabled={!isButtonEnable}/>
       </GridToolbarContainer>
       <TextField
         variant="standard"
@@ -139,7 +262,7 @@ function CustomToolbar(props) {
   );
 }
 
-function GoodsPageBase() {
+function GoodsViewPageBase() {
 
   const [searchText, setSearchText] = React.useState('');
   const [selectedGoods, setSelectedGoods] = React.useState([]);
@@ -185,6 +308,7 @@ function GoodsPageBase() {
           etc: data.etc,
           yongdo: data.yongdo,
           rentalstatus: data.rentalstatus,
+          data: data.address
         });
       })
       setRows(rowList)
@@ -193,35 +317,39 @@ function GoodsPageBase() {
   }
 
   return (
-    <Wrapper>
-      <div style={{height: '100%', width: '100%'}}>
-        <DataGrid
-          components={{ Toolbar: CustomToolbar }}
-          rows={rows}
-          columns={columns}
-          checkboxSelection
-          disableSelectionOnClick
-          disableColumnMenu
-          rowsPerPageOptions = {[100]}
-          onSelectionModelChange = {(newSelection) => {
-            setSelectedGoods(newSelection)
-          }}
-          componentsProps={{
-            toolbar: {
-              value: searchText,
-              selectedGoods: selectedGoods,
-              onChange: (event) => requestSearch(event.target.value),
-              clearSearch: () => requestSearch(''),
-            },
-          }}
-        />
-      </div>
-    </Wrapper>
+    <ThemeProvider theme={theme}>
+      <Wrapper>
+        <div style={{height: '100%', width: '100%'}}>
+          <DataGrid
+            components={{ Toolbar: CustomToolbar }}
+            rows={rows}
+            columns={columns}
+            checkboxSelection
+            disableSelectionOnClick
+            disableColumnMenu
+            localeText={koKR.components.MuiDataGrid.defaultProps.localeText}
+            rowsPerPageOptions = {[100]}
+            onSelectionModelChange = {(newSelection) => {
+              setSelectedGoods(newSelection)
+            }}
+            componentsProps={{
+              toolbar: {
+                value: searchText,
+                selectedGoods: selectedGoods,
+                onChange: (event) => requestSearch(event.target.value),
+                clearSearch: () => requestSearch(''),
+                getDataFromFirebase: () => getDataFromFirebase()
+              },
+            }}
+          />
+        </div>
+      </Wrapper>
+    </ThemeProvider>
   );
 }
 
-const GoodsPage = compose(
+const GoodsViewPage = compose(
   withRouter,
-)(GoodsPageBase);
+)(GoodsViewPageBase);
 
-export default GoodsPage;
+export default GoodsViewPage;

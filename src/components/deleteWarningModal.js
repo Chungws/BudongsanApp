@@ -1,11 +1,11 @@
 import React, {Component} from 'react';
 import firebase from '../firebase';
-import Button from '@material-ui/core/Button';
-import Dialog from '@material-ui/core/Dialog';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogActions from '@material-ui/core/DialogActions';
-import Typography from '@material-ui/core/Typography';
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import Typography from '@mui/material/Typography';
 import DeleteIcon from '@mui/icons-material/DeleteOutlined';
 
 
@@ -17,16 +17,26 @@ class DeleteWarningModal extends Component {
     }
   }
   
-  deleteGood = (addresses) => {
+  deleteGoods = (addresses) => {
     let promises = [];
     
     addresses.map((address) => {
       promises.push(firebase.database().ref(`goods/${address}`).remove())
+      firebase.storage().ref().child(`image/${address}`).listAll()
+      .then((res) => {
+        res.items.map((item) => {
+          promises.push(firebase.storage().ref(`image/${address}/${item.name}`).delete())
+        })
+      })
+      .catch((error) => {
+        console.log(`There is no saved files in ${address} directory`, error)
+      })
     })
 
     return Promise.all(promises)
     .then(()=> {
-      this.props.stateRefresh();
+      this.handleClose();
+      this.props.refresh();
     })
   }
 
@@ -58,7 +68,7 @@ class DeleteWarningModal extends Component {
             </Typography>
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => {this.deleteGood(this.props.addresses)}}>
+            <Button onClick={() => {this.deleteGoods(this.props.addresses)}}>
               삭제
             </Button>
             <Button variant="outlined" color="primary" onClick={this.handleClose}>닫기</Button>
