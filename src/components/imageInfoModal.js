@@ -3,11 +3,13 @@ import firebase from 'firebase';
 import Styled from 'styled-components';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
+import Typography from '@mui/material/Typography';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import SaveIcon from '@mui/icons-material/Save';
 import IconButton from '@mui/material/IconButton';
+import { WaveTopBottomLoading } from 'react-loadingg';
 
 const ImageListContainer = Styled.div`
   left: 0px;
@@ -41,7 +43,8 @@ class ImageInfoModal extends Component {
       super(props);
       this.state = {
         imageUrls: [],
-        open: false
+        open: false,
+        loading: false,
       }
     }
   
@@ -56,31 +59,39 @@ class ImageInfoModal extends Component {
         open: false
       })
     }
+
+    componentDidMount() {
+      this.setState({ loading : true })
+    }
   
     render() {
-      const { imageUrls } = this.state;
+      const { imageUrls, loading } = this.state;
 
       return (
         <div>
           <IconButton onClick={this.handleClickOpen} aria-label="image">
             <SaveIcon />
           </IconButton>
-          <Dialog onClose={this.handleClose} open={this.state.open} fullWidth maxWidth='1000' scroll='paper'>
+          <Dialog onClose={this.handleClose} open={this.state.open} fullWidth maxWidth={imageUrls.length > 0 ? 'xl' : 'xs'} scroll='paper'>
             <DialogTitle onClose={this.handleClose}>
               사진
             </DialogTitle>
             <DialogContent>
-              <ImageListContainer>
-                {
-                  imageUrls.map((url) => (
-                    <ImageContainer>
-                      <Image src={url} />
-                      <div style={{ height : 5 }} />
-                      <Button variant="contained" color="primary" onClick={() => this.downloadImage(url)}>저장</Button>
-                    </ImageContainer>
-                  ))
-                }
-              </ImageListContainer>
+              { loading ? 
+                <WaveTopBottomLoading size={'large'}/> :
+                <ImageListContainer>
+                  { imageUrls.length > 0 ?
+                    imageUrls.map((url) => (
+                      <ImageContainer>
+                        <Image src={url} />
+                        <div style={{ height : 5 }} />
+                        <Button variant="contained" color="primary" onClick={() => this.downloadImage(url)}>저장</Button>
+                      </ImageContainer>
+                    ))
+                    : <Typography>사진이 없습니다</Typography>
+                  }
+                </ImageListContainer>
+              }
             </DialogContent>
             <DialogActions>
               <Button variant="outlined" color="primary" onClick={this.handleClose}>닫기</Button>
@@ -91,14 +102,14 @@ class ImageInfoModal extends Component {
     }
 
     getImageUrls = (address) => {
-      firebase.storage().ref().child(`image/${address}`).listAll()
+      firebase.storage().ref().child(`images/${address}`).listAll()
       .then((res) => {
         let promises = [];
         res.items.map((item) => {promises.push(item.getDownloadURL())})
         return Promise.all(promises)
       })
       .then((downloadUrls) => {
-        this.setState({ imageUrls : downloadUrls })
+        this.setState({ imageUrls : downloadUrls }, () => this.setState({ loading : false }))
       })
     }
 

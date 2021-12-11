@@ -1,9 +1,11 @@
 import * as React from 'react';
 import { useHistory } from "react-router";
-import { withRouter, NavLink } from 'react-router-dom';
+import { withRouter } from 'react-router-dom';
 import { compose } from 'recompose';
 import Styled from 'styled-components';
 import firebase from '../firebase';
+import NumberFormat from 'react-number-format';
+
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import Button from '@mui/material/Button';
@@ -22,6 +24,7 @@ import {
 } from '@mui/x-data-grid';
 import ClearIcon from '@mui/icons-material/Clear';
 import SearchIcon from '@mui/icons-material/Search';
+
 import AreaInfoModal from '../components/areaInfoModal';
 import PriceInfoModal from '../components/priceInfoModal';
 import RentalStatusInfoModal from '../components/rentalStatusInfoModal';
@@ -49,20 +52,21 @@ const columns = [
   { field: 'address', headerName: '소재지' , width: 220, renderCell: renderCellExpand },
   { field: 'yongdo', headerName: '용도지역' , width: 100 },
   { field: 'area', headerName: '대지' , width: 100, align: 'center', headerAlign: 'center', renderCell: (params) => ( <AreaInfoModal area = {params.value}/> ), 
+    align: 'right', headerAlign: 'right',
     sortComparator: (v1, v2, param1, param2) => (
       param1.api.getCellValue(param1.id, 'area').landarea -
       param2.api.getCellValue(param2.id, 'area').landarea
     )
   },
-  { field: 'price', headerName: '매매가' , width: 110, renderCell: (params) => ( <PriceInfoModal price = {params.value}/>),
+  { field: 'price', headerName: '매매가' , width: 110, renderCell: (params) => ( <PriceInfoModal price = {params.value}/> ),
     align: 'right', headerAlign: 'right',
     sortComparator: (v1, v2, param1, param2) => (
       param1.api.getCellValue(param1.id, 'price').totalprice -
       param2.api.getCellValue(param2.id, 'price').totalprice
     )
   },
-  { field: 'deposit', headerName: '보증금' , width: 100, align: 'right', headerAlign: 'right' },
-  { field: 'monthly', headerName: '월세' , width: 100, align: 'right', headerAlign: 'right' },
+  { field: 'deposit', headerName: '보증금' , width: 100, align: 'right', headerAlign: 'right', renderCell: (params) => ( <NumberFormat value={params.value} displayType={'text'} thousandSeparator={true} /> ) },
+  { field: 'monthly', headerName: '월세' , width: 100, align: 'right', headerAlign: 'right', renderCell: (params) => ( <NumberFormat value={params.value} displayType={'text'} thousandSeparator={true} /> ) },
   { field: 'rentalstatus', headerName: '임대현황' , width: 120, align: 'center', headerAlign: 'center', sortable: false,
     renderCell: (params) => ( <RentalStatusInfoModal rentalstatus = {params.value}/> ) },
   { field: 'estate', headerName: '부동산', width: 100, sortable: false, renderCell: renderCellExpand },
@@ -195,10 +199,6 @@ function CustomToolbar(props) {
   const history = useHistory();
   let isButtonEnable = props.selectedGoods.length === 0 ? false : true;
 
-  const stateRefresh = () => {
-    window.location.reload()
-  }
-
   return (
     <Box
       sx={{
@@ -211,14 +211,14 @@ function CustomToolbar(props) {
       }}
     >
       <GridToolbarContainer>
-        <NavLink exact activeClassName="active" to="/goods/create" style={{ textDecoration: 'none' }}>
-          <Button color="primary" startIcon={<AddIcon />} style={{ fontSize: '13px' }}>
-            매물 추가
-          </Button>
-        </NavLink>
+        <Button color="primary" startIcon={<AddIcon />} style={{ fontSize: '13px' }}
+          onClick={() => {history.push({ pathname: "/goods/manage", state: { address: null } })}}  
+        >
+          매물 추가
+        </Button>
         <GridToolbarDensitySelector/>
         <Button color="primary" startIcon={<EditIcon />} style={{ fontSize: '13px' }} disabled={!isButtonEnable} 
-          onClick={() => {history.push({ pathname: "/goods/update", state: {address: props.selectedGoods[0]} })}}
+          onClick={() => {history.push({ pathname: "/goods/manage", state: { address: props.selectedGoods[0]} })}}
         >
           매물 수정
         </Button>

@@ -13,7 +13,7 @@ class DeleteWarningModal extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      open: false
+      open: false,
     }
   }
   
@@ -22,10 +22,10 @@ class DeleteWarningModal extends Component {
     
     addresses.map((address) => {
       promises.push(firebase.database().ref(`goods/${address}`).remove())
-      firebase.storage().ref().child(`image/${address}`).listAll()
+      firebase.storage().ref().child(`images/${address}`).listAll()
       .then((res) => {
         res.items.map((item) => {
-          promises.push(firebase.storage().ref(`image/${address}/${item.name}`).delete())
+          promises.push(firebase.storage().ref(`images/${address}/${item.name}`).delete())
         })
       })
       .catch((error) => {

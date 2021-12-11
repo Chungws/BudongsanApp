@@ -2,8 +2,7 @@ import React, { Component } from 'react';
 import { Switch, Route } from 'react-router-dom';
 import MainPage from '../src/pages/main';
 import GoodsViewPage from '../src/pages/goodsView';
-import GoodsCreatePage from '../src/pages/goodsCreate';
-import GoodsUpdatePage from '../src/pages/goodsUpdate';
+import GoodsManagePage from './pages/goodsManage';
 
 class App extends Component {
   render() {
@@ -12,8 +11,7 @@ class App extends Component {
         <Switch>
           <Route exact path="/" render={() => <MainPage />} />
           <Route exact path="/goods" render={() => <GoodsViewPage />} />
-          <Route exact path="/goods/create" render={() => <GoodsCreatePage />} />
-          <Route exact path="/goods/update" render={() => <GoodsUpdatePage />} />
+          <Route exact path="/goods/manage" render={() => <GoodsManagePage />} />
         </Switch>
       </div>
     );
