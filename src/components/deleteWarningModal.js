@@ -54,10 +54,11 @@ class DeleteWarningModal extends Component {
 
   render() {
     return (
-      <>
+      <>{this.props.isMobile ? 
+        <Button variant="outlined" color="primary" onClick={this.handleClickOpen} >삭제</Button> : 
         <Button color="primary" startIcon={<DeleteIcon />} style={{ fontSize: '13px' }} disabled={this.props.disabled} onClick={this.handleClickOpen}>
           매물 삭제
-        </Button>
+        </Button>}
         <Dialog onClose={this.handleClose} open={this.state.open}>
           <DialogTitle onClose={this.handleClose}>
             삭제 경고

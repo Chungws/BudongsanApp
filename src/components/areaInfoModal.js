@@ -29,8 +29,8 @@ class AreaInfoModal extends Component {
   
     render() {
       return (
-        <div>
-        <Button color="inherit" onClick={this.handleClickOpen} align='right'>{<NumberFormat value={this.props.area.landarea} displayType={'text'} thousandSeparator={true} decimalScale={2} fixedDecimalScale/>}</Button>
+        <div style={{ display : 'inline'}}>
+        <Typography style={{ display : 'inherit', cursor : 'pointer', fontSize : 'inherit', fontWeight : 'bold' }} color="inherit" onClick={this.handleClickOpen} align='right'>{<NumberFormat value={this.props.area.landarea} displayType={'text'} thousandSeparator={true} decimalScale={2} fixedDecimalScale/>}</Typography>
         <Dialog onClose={this.handleClose} open={this.state.open} fullWidth>
           <DialogTitle onClose={this.handleClose}>
             추가 정보

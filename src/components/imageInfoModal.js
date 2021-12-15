@@ -9,7 +9,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import SaveIcon from '@mui/icons-material/Save';
 import IconButton from '@mui/material/IconButton';
-import { WaveTopBottomLoading } from 'react-loadingg';
+import CircularProgress from '@mui/material/CircularProgress';
 
 const ImageListContainer = Styled.div`
   left: 0px;
@@ -25,6 +25,7 @@ const ImageListContainer = Styled.div`
 `
 
 const ImageContainer = Styled.div`
+  width: auto;
   height: 500px;
   margin: 10px;
   display: flex;
@@ -78,7 +79,10 @@ class ImageInfoModal extends Component {
             </DialogTitle>
             <DialogContent>
               { loading ? 
-                <WaveTopBottomLoading size={'large'}/> :
+                <div style={{ display : 'flex', alignItems : 'center', justifyContent : 'center'}}>
+                  <CircularProgress size={40}/>
+                </div> 
+                :
                 <ImageListContainer>
                   { imageUrls.length > 0 ?
                     imageUrls.map((url) => (

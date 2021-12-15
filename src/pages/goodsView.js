@@ -22,6 +22,7 @@ import {
   GridToolbarDensitySelector,
   koKR
 } from '@mui/x-data-grid';
+import CircularProgress from '@mui/material/CircularProgress';
 import ClearIcon from '@mui/icons-material/Clear';
 import SearchIcon from '@mui/icons-material/Search';
 
@@ -30,6 +31,7 @@ import PriceInfoModal from '../components/priceInfoModal';
 import RentalStatusInfoModal from '../components/rentalStatusInfoModal';
 import DeleteButton from '../components/deleteWarningModal';
 import ImageInfoModal from '../components/imageInfoModal';
+import GoodsViewMobilePage from './mobile/mobileGoodsView';
 
 const Wrapper = Styled.div`
   width: 100%;
@@ -42,7 +44,7 @@ const Wrapper = Styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   background-color: white;
 `
 
@@ -51,14 +53,14 @@ const columns = [
   { field: 'division', headerName: '구분' , width: 120, renderCell: renderCellExpand },
   { field: 'address', headerName: '소재지' , width: 220, renderCell: renderCellExpand },
   { field: 'yongdo', headerName: '용도지역' , width: 100 },
-  { field: 'area', headerName: '대지' , width: 100, align: 'center', headerAlign: 'center', renderCell: (params) => ( <AreaInfoModal area = {params.value}/> ), 
+  { field: 'area', headerName: '대지' , width: 100, align: 'center', headerAlign: 'center', renderCell: (params) => ( <ThemeProvider theme={theme}><AreaInfoModal area = {params.value}/></ThemeProvider> ), 
     align: 'right', headerAlign: 'right',
     sortComparator: (v1, v2, param1, param2) => (
       param1.api.getCellValue(param1.id, 'area').landarea -
       param2.api.getCellValue(param2.id, 'area').landarea
     )
   },
-  { field: 'price', headerName: '매매가' , width: 110, renderCell: (params) => ( <PriceInfoModal price = {params.value}/> ),
+  { field: 'price', headerName: '매매가' , width: 110, renderCell: (params) => ( <ThemeProvider theme={theme}><PriceInfoModal price = {params.value}/></ThemeProvider> ),
     align: 'right', headerAlign: 'right',
     sortComparator: (v1, v2, param1, param2) => (
       param1.api.getCellValue(param1.id, 'price').totalprice -
@@ -68,11 +70,11 @@ const columns = [
   { field: 'deposit', headerName: '보증금' , width: 100, align: 'right', headerAlign: 'right', renderCell: (params) => ( <NumberFormat value={params.value} displayType={'text'} thousandSeparator={true} /> ) },
   { field: 'monthly', headerName: '월세' , width: 100, align: 'right', headerAlign: 'right', renderCell: (params) => ( <NumberFormat value={params.value} displayType={'text'} thousandSeparator={true} /> ) },
   { field: 'rentalstatus', headerName: '임대현황' , width: 120, align: 'center', headerAlign: 'center', sortable: false,
-    renderCell: (params) => ( <RentalStatusInfoModal rentalstatus = {params.value}/> ) },
+    renderCell: (params) => ( <ThemeProvider theme={theme}><RentalStatusInfoModal rentalstatus = {params.value}/></ThemeProvider> ) },
   { field: 'estate', headerName: '부동산', width: 100, sortable: false, renderCell: renderCellExpand },
   { field: 'etc', headerName: '비고' , width: 200, sortable: false, renderCell: renderCellExpand },
   { field: 'data', headerName: '자료', width: 80, align: 'center', headerAlign: 'center', sortable: false, 
-    renderCell: (params) => ( <ImageInfoModal address={params.value}/> )}
+    renderCell: (params) => ( <ThemeProvider theme={theme}><ImageInfoModal address={params.value}/></ThemeProvider> )}
 ];
 
 function escapeRegExp(value) {
@@ -212,7 +214,7 @@ function CustomToolbar(props) {
     >
       <GridToolbarContainer>
         <Button color="primary" startIcon={<AddIcon />} style={{ fontSize: '13px' }}
-          onClick={() => {history.push({ pathname: "/goods/manage", state: { address: null } })}}  
+          onClick={() => {history.push({ pathname: "/goods/manage", state: { address: '' } })}}  
         >
           매물 추가
         </Button>
@@ -222,7 +224,7 @@ function CustomToolbar(props) {
         >
           매물 수정
         </Button>
-        <DeleteButton refresh={props.getDataFromFirebase} addresses={props.selectedGoods} disabled={!isButtonEnable}/>
+        <DeleteButton refresh={props.getDataFromFirebase} addresses={props.selectedGoods} disabled={!isButtonEnable} isMobile={false}/>
       </GridToolbarContainer>
       <TextField
         variant="standard"
@@ -263,15 +265,30 @@ function CustomToolbar(props) {
 }
 
 function GoodsViewPageBase() {
-
   const [searchText, setSearchText] = React.useState('');
   const [selectedGoods, setSelectedGoods] = React.useState([]);
   const [rows, setRows] = React.useState([]);
   const [data, setData] = React.useState([]);
+  const [loading, setLoading] = React.useState(false);
+  const [windowSize, setWindowSize] = React.useState({
+    width: window.innerWidth,
+    height: window.innerHeight
+  });
 
   React.useEffect(() => {
+    window.addEventListener('resize', handleResize);
     getDataFromFirebase();
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    }
   }, []);
+
+  const handleResize = () => {
+    setWindowSize({
+      width: window.innerWidth,
+      height: window.innerHeight
+    })
+  }
 
   const requestSearch = (searchValue) => {
     setSearchText(searchValue);
@@ -285,7 +302,9 @@ function GoodsViewPageBase() {
   };
 
   const getDataFromFirebase = () => {
-    firebase.database().ref(`/goods`).once('value').then((snapshot)=>{
+    setLoading(true);
+    firebase.database().ref(`/goods`).once('value')
+    .then((snapshot)=>{
       let rowList = [];
       const goods = snapshot.val();
   
@@ -311,41 +330,63 @@ function GoodsViewPageBase() {
           data: data.address
         });
       })
-      setRows(rowList)
-      setData(rowList)
+      return rowList
+    })
+    .then((result) => {
+      setRows(result)
+      setData(result)
+      setLoading(false)
     })
   }
 
-  return (
-    <ThemeProvider theme={theme}>
-      <Wrapper>
-        <div style={{height: '100%', width: '100%'}}>
-          <DataGrid
-            components={{ Toolbar: CustomToolbar }}
-            rows={rows}
-            columns={columns}
-            checkboxSelection
-            disableSelectionOnClick
-            disableColumnMenu
-            localeText={koKR.components.MuiDataGrid.defaultProps.localeText}
-            rowsPerPageOptions = {[100]}
-            onSelectionModelChange = {(newSelection) => {
-              setSelectedGoods(newSelection)
-            }}
-            componentsProps={{
-              toolbar: {
-                value: searchText,
-                selectedGoods: selectedGoods,
-                onChange: (event) => requestSearch(event.target.value),
-                clearSearch: () => requestSearch(''),
-                getDataFromFirebase: () => getDataFromFirebase()
-              },
-            }}
-          />
-        </div>
-      </Wrapper>
-    </ThemeProvider>
-  );
+  if (windowSize.width < 700) {
+    return (
+      <ThemeProvider theme={theme}>
+        <Wrapper>
+          {loading ?
+          <div style={{ display : 'flex', alignItems : 'center', justifyContent : 'center'}}> 
+            <CircularProgress size={40}/>
+          </div> :
+            <GoodsViewMobilePage data={data} refresh={() => getDataFromFirebase()}/>
+          }
+        </Wrapper>
+      </ThemeProvider>
+    );
+  } else {
+    return (
+      <ThemeProvider theme={theme}>
+        <Wrapper>
+          {loading ? 
+          <div style={{ display : 'flex', alignItems : 'center', justifyContent : 'center'}}> <CircularProgress size={40}/> </div> :
+            <div style={{height: '100%', width: '100%'}}>
+              <DataGrid
+                components={{ Toolbar: CustomToolbar }}
+                rows={rows}
+                columns={columns}
+                checkboxSelection
+                disableSelectionOnClick
+                disableColumnMenu
+                localeText={koKR.components.MuiDataGrid.defaultProps.localeText}
+                rowsPerPageOptions = {[100]}
+                onSelectionModelChange = {(newSelection) => {
+                  setSelectedGoods(newSelection)
+                }}
+                componentsProps={{
+                  toolbar: {
+                    value: searchText,
+                    selectedGoods: selectedGoods,
+                    onChange: (event) => requestSearch(event.target.value),
+                    clearSearch: () => requestSearch(''),
+                    getDataFromFirebase: () => getDataFromFirebase()
+                  },
+                }}
+              />
+            </div>
+          }
+        </Wrapper>
+      </ThemeProvider>
+    );
+  }
 }
 
 const GoodsViewPage = compose(
