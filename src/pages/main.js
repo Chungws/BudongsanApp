@@ -152,7 +152,7 @@ class MainPageBase extends Component{
         </ButtonContainer>
         <div style={{position: 'absolute', top: 20, right: 10}}>
           <p style={{color: '#000'}}>
-            {auth.currentUser ? "로그인되었습니다" : "로그인해주세요"}
+            {isLogin ? "로그인되었습니다" : "로그인해주세요"}
           </p>
         </div>
       </Wrapper>
