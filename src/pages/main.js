@@ -115,7 +115,6 @@ class MainPageBase extends Component{
 
   render(){
     const { isLogin } = this.state;
-    console.log(this.state)
     return(
       <Wrapper>
         <MainText style={{marginTop: '2%'}}>부동산 매물 관리</MainText>
