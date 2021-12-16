@@ -5,13 +5,10 @@ import { compose } from 'recompose';
 import { auth } from "../firebase";
 
 const Wrapper = Styled.div`
-  width: 100%;
-  height: 100%;
-  left: 0px;
-  top: 0px;
-  overflow: hidden;
-  position: fixed;
-  margin: 0 auto;
+  width: 100vw;
+  height: 100vh;
+  margin: 0px;
+  overflow: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -34,7 +31,7 @@ const MainText = Styled.p`
 `
 
 const InputContainer = Styled.div`
-  width: 420px;
+  width: ${window.innerWidth < 700 ? '95vw' : '420px'};
   padding: 10px;
   display: flex;
   flex-direction: column;
@@ -57,7 +54,7 @@ const TextInput = Styled.input`
   margin-top: 15px;
   margin-bottom: 10px;
   border-radius: 2px;
-  width: 400px;
+  width: ${window.innerWidth < 700 ? '90vw' : '400px'};
   height: 40px;
   border: 1px solid #e5e5e5;
   padding: 9px 12px;
@@ -88,7 +85,21 @@ class MainPageBase extends Component{
       password: "",
       error: null,
       isLogin: false,
+      width: 0,
+      height: 0,
     }
+  }
+
+  updateWindowDimensions = () => {
+    this.setState({ width: window.innerWidth, height: window.innerHeight });
+  }
+
+  componentDidMount() {
+    this.updateWindowDimensions();
+    window.addEventListener('resize', this.updateWindowDimensions);
+  }
+  componentWillUnmount() {
+    window.removeEventListener('resize', this.updateWindowDimensions);
   }
 
   onSubmit = (event) => {
