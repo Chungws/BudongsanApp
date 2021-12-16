@@ -3,7 +3,7 @@ import { useHistory } from "react-router";
 import { withRouter } from 'react-router-dom';
 import { compose } from 'recompose';
 import Styled from 'styled-components';
-import firebase from '../firebase';
+import { db } from '../firebase';
 import NumberFormat from 'react-number-format';
 
 import Box from '@mui/material/Box';
@@ -53,7 +53,7 @@ const columns = [
   { field: 'division', headerName: '구분' , width: 120, renderCell: renderCellExpand },
   { field: 'address', headerName: '소재지' , width: 220, renderCell: renderCellExpand },
   { field: 'yongdo', headerName: '용도지역' , width: 100 },
-  { field: 'area', headerName: '대지' , width: 100, align: 'center', headerAlign: 'center', renderCell: (params) => ( <ThemeProvider theme={theme}><AreaInfoModal area = {params.value}/></ThemeProvider> ), 
+  { field: 'area', headerName: '대지' , width: 100, renderCell: (params) => ( <ThemeProvider theme={theme}><AreaInfoModal area = {params.value}/></ThemeProvider> ), 
     align: 'right', headerAlign: 'right',
     sortComparator: (v1, v2, param1, param2) => (
       param1.api.getCellValue(param1.id, 'area').landarea -
@@ -303,12 +303,12 @@ function GoodsViewPageBase() {
 
   const getDataFromFirebase = () => {
     setLoading(true);
-    firebase.database().ref(`/goods`).once('value')
+    db.ref(`/goods`).once('value')
     .then((snapshot)=>{
       let rowList = [];
       const goods = snapshot.val();
   
-      Object.keys(goods).map((good) => {
+      Object.keys(goods).forEach((good) => {
         const id = good;
         const data = goods[good];
   

@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import firebase from '../firebase';
+import { db, storage } from '../firebase';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -20,12 +20,12 @@ class DeleteWarningModal extends Component {
   deleteGoods = (addresses) => {
     let promises = [];
     
-    addresses.map((address) => {
-      promises.push(firebase.database().ref(`goods/${address}`).remove())
-      firebase.storage().ref().child(`images/${address}`).listAll()
+    addresses.forEach((address) => {
+      promises.push(db.ref(`goods/${address}`).remove())
+      storage.ref().child(`images/${address}`).listAll()
       .then((res) => {
-        res.items.map((item) => {
-          promises.push(firebase.storage().ref(`images/${address}/${item.name}`).delete())
+        res.items.forEach((item) => {
+          promises.push(storage.ref(`images/${address}/${item.name}`).delete())
         })
       })
       .catch((error) => {

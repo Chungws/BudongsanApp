@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import firebase from 'firebase';
+import { storage } from '../firebase';
 import Styled from 'styled-components';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
@@ -106,10 +106,10 @@ class ImageInfoModal extends Component {
     }
 
     getImageUrls = (address) => {
-      firebase.storage().ref().child(`images/${address}`).listAll()
+      storage.ref().child(`images/${address}`).listAll()
       .then((res) => {
         let promises = [];
-        res.items.map((item) => {promises.push(item.getDownloadURL())})
+        res.items.forEach((item) => {promises.push(item.getDownloadURL())})
         return Promise.all(promises)
       })
       .then((downloadUrls) => {
@@ -127,7 +127,6 @@ class ImageInfoModal extends Component {
         a.style.display = 'none';
         document.body.appendChild(a);
         a.click();
-        var blob = xhr.response;
       };
       xhr.open('GET', url);
       xhr.send();

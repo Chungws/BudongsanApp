@@ -1,34 +1,19 @@
 import * as React from 'react';
 import { useHistory } from "react-router";
-import { withRouter } from 'react-router-dom';
-import { compose } from 'recompose';
 import Styled from 'styled-components';
-import firebase from '../../firebase';
-import NumberFormat from 'react-number-format';
-import { FixedSizeList } from 'react-window';
 
 import Box from '@mui/material/Box';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemText from '@mui/material/ListItemText';
-import ListSubheader from '@mui/material/ListSubheader';
 import Divider from '@mui/material/Divider';
 import Fab from '@mui/material/Fab';
-import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import AddIcon from '@mui/icons-material/Add';
-import EditIcon from '@mui/icons-material/Edit';
 import ClearIcon from '@mui/icons-material/Clear';
 import SearchIcon from '@mui/icons-material/Search';
 
-import AreaInfoModal from '../../components/areaInfoModal';
-import PriceInfoModal from '../../components/priceInfoModal';
-import RentalStatusInfoModal from '../../components/rentalStatusInfoModal';
-import DeleteButton from '../../components/deleteWarningModal';
-import ImageInfoModal from '../../components/imageInfoModal';
 import MobileInfoModal from '../../components/mobile/mobileInfoModal';
 
 const Wrapper = Styled.div`
@@ -112,7 +97,7 @@ export default function GoodsViewMobilePage({data, refresh}) {
                 return(
                   <>
                     <ListItem>
-                      <MobileInfoModal data={data.find((item) => item.id == address)} refresh={() => refresh()} />
+                      <MobileInfoModal data={data.find((item) => item.id === address)} refresh={() => refresh()} />
                     </ListItem>
                     <Divider/>
                   </>

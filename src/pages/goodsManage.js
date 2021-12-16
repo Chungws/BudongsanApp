@@ -1,13 +1,11 @@
 import React from 'react';
 import Styled from 'styled-components';
-import firebase from '../firebase';
-//import {db, auth, functions, storage, firebase} from '../components/firebase';
+import { db, storage } from '../firebase';
 import { NavLink, withRouter, useLocation } from 'react-router-dom';
 import { compose } from 'recompose';
 import dayjs from 'dayjs';
 import { ko } from 'date-fns/locale';
 import NumberFormat from 'react-number-format';
-import { debounce } from 'lodash';
 
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
@@ -186,10 +184,10 @@ function GoodsManageBase() {
 
   const getImageUrls = (address) => {
     setLoading(true)
-    firebase.storage().ref().child(`images/${address}`).listAll()
+    storage.ref().child(`images/${address}`).listAll()
     .then((res) => {
       let promises = [];
-      res.items.map((item) => {promises.push(item.getDownloadURL())})
+      res.items.forEach((item) => {promises.push(item.getDownloadURL())})
       return Promise.all(promises)
     })
     .then((downloadUrls) => {
@@ -203,7 +201,7 @@ function GoodsManageBase() {
     let promises = [];
 
     promises.push(
-      firebase.database().ref(`goods/${state.address.replace(/^\s+|\s+$/gm,'')}`)
+      db.ref(`goods/${state.address.replace(/^\s+|\s+$/gm,'')}`)
       .set({
         date: state.date,
         division: state.division,
@@ -244,10 +242,10 @@ function GoodsManageBase() {
     )
 
     if (images.current) {
-      images.current.map((image) => {
+      images.current.forEach((image) => {
         const randomName = Math.random().toString(36).substring(2, 15);
         promises.push(
-          firebase.storage().ref(`images/${state.address.replace(/^\s+|\s+$/gm,'')}/${randomName}`).put(image)
+          storage.ref(`images/${state.address.replace(/^\s+|\s+$/gm,'')}/${randomName}`).put(image)
         )
       })
     }
@@ -266,7 +264,7 @@ function GoodsManageBase() {
   }
 
   const getAddressList = () => {
-    firebase.database().ref(`goods`).once('value')
+    db.ref(`goods`).once('value')
     .then((snap) => {
       if (snap && snap.val()) {
         const goodsList = snap.val();
@@ -283,7 +281,7 @@ function GoodsManageBase() {
     let promises = [];
 
     promises.push(
-      firebase.database().ref(`/goods/${address}`).once('value')
+      db.ref(`/goods/${address}`).once('value')
       .then((snapshot)=>{
         if (snapshot && snapshot.val()) {
           const info = snapshot.val();
@@ -335,7 +333,7 @@ function GoodsManageBase() {
   const deleteImage = (name) => {
     if (window.confirm('정말 삭제하시겠습니까?')) {
       setLoading(true)
-      firebase.storage().ref().child(`images/${address}/${name}`).delete()
+      storage.ref().child(`images/${address}/${name}`).delete()
       .then(() => {
         setLoading(false)
         alert(`사진 삭제 완료 : ${name}`)

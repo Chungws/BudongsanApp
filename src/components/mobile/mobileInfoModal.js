@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import firebase from 'firebase';
+import { storage } from '../../firebase';
 import Styled from 'styled-components';
 import NumberFormat from 'react-number-format';
 import { withRouter } from "react-router-dom";
@@ -9,9 +9,6 @@ import Typography from '@mui/material/Typography';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
-import Box from '@mui/material/Box';
-import SaveIcon from '@mui/icons-material/Save';
-import IconButton from '@mui/material/IconButton';
 import CircularProgress from '@mui/material/CircularProgress';
 
 import AreaInfoModal from '../areaInfoModal';
@@ -160,10 +157,10 @@ class MobileInfoModal extends Component {
   }
 
   getImageUrls = (address) => {
-    firebase.storage().ref().child(`images/${address}`).listAll()
+    storage.ref().child(`images/${address}`).listAll()
     .then((res) => {
       let promises = [];
-      res.items.map((item) => {promises.push(item.getDownloadURL())})
+      res.items.forEach((item) => {promises.push(item.getDownloadURL())})
       return Promise.all(promises)
     })
     .then((downloadUrls) => {
@@ -182,7 +179,6 @@ class MobileInfoModal extends Component {
       a.style.display = 'none';
       document.body.appendChild(a);
       a.click();
-      var blob = xhr.response;
     };
     xhr.open('GET', url);
     xhr.send();

@@ -12,12 +12,4 @@ export const db = firebase.database();
 export const auth = firebase.auth();
 export const storage = firebase.storage();
 
-
-// class Firebase {
-//   constructor() {
-//     this.auth = auth;
-//     this.db = db;
-//   }
-// }
-
 export default firebase;
