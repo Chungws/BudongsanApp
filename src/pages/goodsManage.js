@@ -16,6 +16,7 @@ import LocalizationProvider from '@mui/lab/LocalizationProvider';
 import AdapterDateFns from '@mui/lab/AdapterDateFns';
 import DesktopDatePicker from '@mui/lab/DesktopDatePicker';
 import CircularProgress from '@mui/material/CircularProgress';
+import ArticleIcon from '@mui/icons-material/Article';
 
 import ImageUploadModal from '../components/imageUploadModal';
 
@@ -122,6 +123,7 @@ function GoodsManageBase() {
     etc: "",
   });
   const [imageUrls, setImageUrls] = React.useState([]);
+  const [documentUrls, setDocumentUrls] = React.useState([]);
   const [addressList, setAddressList] = React.useState([]);
   const [isValidAddress, setIsValidAddress] = React.useState(false);
   const [helpText, setHelpText] = React.useState('');
@@ -130,16 +132,18 @@ function GoodsManageBase() {
     width: window.innerWidth,
     height: window.innerHeight
   });
-  const images = React.useRef([]);
+  const files = React.useRef([]);
   const address = useLocation().state.address;
   const isUpdate = address ? true : false;
   
 
   React.useEffect(() => {
     if (isUpdate) {
+      getFileUrls(address);
       getGoods(address);
+    } else {
+      getAddressList();
     }
-    getAddressList();
     window.addEventListener('resize', handleResize);
     return () => {
       window.removeEventListener('resize', handleResize);
@@ -178,21 +182,39 @@ function GoodsManageBase() {
     setState((prevState) => ({...prevState, [event.target.name] : event.target.value}))
   }
 
-  const getImages = (updatedImages) => {
-    images.current = updatedImages
+  const getFiles = (updatedFiles) => {
+    files.current = updatedFiles
   }
 
-  const getImageUrls = (address) => {
+  const getFileUrls = (address) => {
     setLoading(true)
     storage.ref().child(`images/${address}`).listAll()
     .then((res) => {
       let promises = [];
-      res.items.forEach((item) => {promises.push(item.getDownloadURL())})
+      res.items.forEach((item) => {
+        promises.push(item.getDownloadURL())
+      })
       return Promise.all(promises)
+    }).then((urls) => {
+      let imageUrls = [];
+      let documentUrls = [];
+      urls.forEach((url) => {
+        if (url.includes('.pdf') || url.includes('.hwp')) {
+          documentUrls.push(url)
+        } else {
+          imageUrls.push(url)
+        }
+      })
+      return {imageUrls : imageUrls, documentUrls : documentUrls}
     })
-    .then((downloadUrls) => {
+    .then((res) => {
+      console.log('파일 불러오기 성공')
       setLoading(false)
-      setImageUrls(downloadUrls)
+      setImageUrls(res.imageUrls)
+      setDocumentUrls(res.documentUrls)
+    })
+    .catch((error) => {
+      console.log('파일 불러오기 실패')
     })
   }
 
@@ -241,12 +263,18 @@ function GoodsManageBase() {
       })
     )
 
-    if (images.current) {
-      images.current.forEach((image) => {
-        const randomName = Math.random().toString(36).substring(2, 15);
-        promises.push(
-          storage.ref(`images/${state.address.replace(/^\s+|\s+$/gm,'')}/${randomName}`).put(image)
-        )
+    if (files.current) {
+      files.current.forEach((file) => {
+        if (file.type === 'application/pdf' || file.type === 'application/haansofthwp') {
+          promises.push(
+            storage.ref(`images/${state.address.replace(/^\s+|\s+$/gm,'')}/${file.name}`).put(file)
+          )
+        } else {
+          const randomName = Math.random().toString(36).substring(2, 15);
+          promises.push(
+            storage.ref(`images/${state.address.replace(/^\s+|\s+$/gm,'')}/${randomName}`).put(file)
+          )
+        }
       })
     }
 
@@ -279,7 +307,6 @@ function GoodsManageBase() {
   const getGoods = (address) => {
     setLoading(true)
     let promises = [];
-
     promises.push(
       db.ref(`/goods/${address}`).once('value')
       .then((snapshot)=>{
@@ -316,7 +343,6 @@ function GoodsManageBase() {
         }
       })
     )
-    promises.push(getImageUrls(address))
     
     return Promise.all(promises)
     .then(() => {
@@ -348,9 +374,9 @@ function GoodsManageBase() {
     }
   }
 
-  const getImageName = (url) => {
-    const imageName = url.split('%2F')[2].split('?')[0]
-    return imageName
+  const getFileName = (url) => {
+    const fileName = url.split('%2F')[2].split('?')[0]
+    return fileName
   }
 
   return(
@@ -447,7 +473,7 @@ function GoodsManageBase() {
                 InputProps={{
                   inputComponent: ({ inputRef, ...other }) => <div {...other} />
                 }}
-                inputProps={{ children: <ImageUploadModal name="images" getImages={getImages}/> }}
+                inputProps={{ children: <ImageUploadModal name="images" getFiles={getFiles}/> }}
               />
               <div style={{ height : 10 }} />
               { isUpdate ? 
@@ -468,10 +494,20 @@ function GoodsManageBase() {
                           <ImageContainer>
                             <Image src={url} />
                             <div style={{ height : 5 }} />
-                            <Button variant="contained" color="primary" onClick={() => deleteImage(getImageName(url))}>삭제</Button>
+                            <Button variant="contained" color="primary" onClick={() => deleteImage(getFileName(url))}>삭제</Button>
                           </ImageContainer>
                         ))
                         : <Typography>저장된 사진이 없습니다</Typography>
+                      }
+                      { documentUrls.length > 0 ?
+                        documentUrls.map((url) => (
+                          <ImageContainer style={{ justifyContent : 'flex-end'}}>
+                            <ArticleIcon sx={{ width : 100, height : 100, margin : 'auto'}} src={url}/>
+                            <Typography>{decodeURI(getFileName(url))}</Typography>
+                            <Button variant="contained" color="primary" onClick={() => deleteImage(getFileName(url))}>삭제</Button>
+                          </ImageContainer>
+                        ))
+                        : <Typography>저장된 문서가 없습니다</Typography>
                       }
                     </ImageListContainer>
                   }}

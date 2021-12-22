@@ -2,24 +2,15 @@ import React, { useState } from "react";
 import ImageUploader from "react-images-upload";
 
 const ImageUploadModal = (props) => {
-  const { getImages, getDocuments } = props;
-  const [pictures, setPictures] = useState([]);
-  const [documents, setDocuments] = useState([]);
+  const { getFiles } = props;
+  const [files, setFiles] = useState([]);
 
   React.useEffect(() => {
-    getImages(pictures[pictures.length-1])
-  }, [pictures])
-
-  React.useEffect(() => {
-    getDocuments(documents[documents.length-1])
-  }, [documents])
+    getFiles(files[files.length-1])
+  }, [files])
 
   const onDrop = data => {
-    if (data.type === 'application/pdf' || data.type === 'application/haansofthwp') {
-      setDocuments([...documents, data])
-    } else {
-      setPictures([...pictures, data])
-    }
+    setFiles([...files, data])
   }
 
   return (

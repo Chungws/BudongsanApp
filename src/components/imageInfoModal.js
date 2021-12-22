@@ -10,6 +10,7 @@ import DialogActions from '@mui/material/DialogActions';
 import SaveIcon from '@mui/icons-material/Save';
 import IconButton from '@mui/material/IconButton';
 import CircularProgress from '@mui/material/CircularProgress';
+import ArticleIcon from '@mui/icons-material/Article';
 
 const ImageListContainer = Styled.div`
   left: 0px;
@@ -44,6 +45,7 @@ class ImageInfoModal extends Component {
       super(props);
       this.state = {
         imageUrls: [],
+        documentUrls: [],
         open: false,
         loading: false,
       }
@@ -52,7 +54,7 @@ class ImageInfoModal extends Component {
     handleClickOpen=()=> {
       this.setState({
         open: true
-      },() => this.getImageUrls(this.props.address));
+      },() => this.getFileUrls(this.props.address));
     }
   
     handleClose=()=> {
@@ -66,7 +68,7 @@ class ImageInfoModal extends Component {
     }
   
     render() {
-      const { imageUrls, loading } = this.state;
+      const { imageUrls, documentUrls, loading } = this.state;
 
       return (
         <div>
@@ -92,7 +94,17 @@ class ImageInfoModal extends Component {
                         <Button variant="contained" color="primary" onClick={() => this.downloadImage(url)}>저장</Button>
                       </ImageContainer>
                     ))
-                    : <Typography>사진이 없습니다</Typography>
+                    : <Typography>저장된 사진이 없습니다</Typography>
+                  }
+                  { documentUrls.length > 0 ?
+                    documentUrls.map((url) => (
+                      <ImageContainer style={{ justifyContent : 'flex-end'}}>
+                        <ArticleIcon sx={{ width : 100, height : 100, margin : 'auto'}} src={url}/>
+                        <Typography>{decodeURI(this.getFileName(url))}</Typography>
+                        <Button variant="contained" color="primary" onClick={() => this.downloadImage(url)}>저장</Button>
+                      </ImageContainer>
+                    ))
+                    : <Typography>저장된 문서가 없습니다</Typography>
                   }
                 </ImageListContainer>
               }
@@ -105,25 +117,47 @@ class ImageInfoModal extends Component {
       )
     }
 
-    getImageUrls = (address) => {
+    getFileName = (url) => {
+      const fileName = url.split('%2F')[2].split('?')[0]
+      return fileName
+    }
+
+    getFileUrls = (address) => {
       storage.ref().child(`images/${address}`).listAll()
       .then((res) => {
         let promises = [];
-        res.items.forEach((item) => {promises.push(item.getDownloadURL())})
+        res.items.forEach((item) => {
+          promises.push(item.getDownloadURL())
+        })
         return Promise.all(promises)
+      }).then((urls) => {
+        let imageUrls = [];
+        let documentUrls = [];
+        urls.forEach((url) => {
+          if (url.includes('.pdf') || url.includes('.hwp')) {
+            documentUrls.push(url)
+          } else {
+            imageUrls.push(url)
+          }
+        })
+        return {imageUrls : imageUrls, documentUrls : documentUrls}
       })
-      .then((downloadUrls) => {
-        this.setState({ imageUrls : downloadUrls }, () => this.setState({ loading : false }))
+      .then((res) => {
+        console.log('파일 불러오기 성공')
+        this.setState({ loading : false, imageUrls : res.imageUrls, documentUrls : res.documentUrls })
+      })
+      .catch((error) => {
+        console.log('파일 불러오기 실패')
       })
     }
 
     downloadImage = (url) => {
       var xhr = new XMLHttpRequest();
       xhr.responseType = 'blob';
-      xhr.onload = function(event) {
+      xhr.onload = (event) => {
         var a = document.createElement('a');
         a.href = window.URL.createObjectURL(xhr.response);
-        a.download = 'image';
+        a.download = decodeURI(this.getFileName(url));
         a.style.display = 'none';
         document.body.appendChild(a);
         a.click();
