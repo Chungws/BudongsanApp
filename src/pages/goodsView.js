@@ -214,13 +214,17 @@ function CustomToolbar(props) {
     >
       <GridToolbarContainer>
         <Button color="primary" startIcon={<AddIcon />} style={{ fontSize: '13px' }}
-          onClick={() => {history.push({ pathname: "/goods/manage", state: { address: '' } })}}  
+          onClick={() => {
+            window.sessionStorage.setItem('budongsanState', JSON.stringify(props.state))
+            history.push({ pathname: "/goods/manage", state: { address: '' } })}}  
         >
           매물 추가
         </Button>
         <GridToolbarDensitySelector/>
         <Button color="primary" startIcon={<EditIcon />} style={{ fontSize: '13px' }} disabled={!isButtonEnable} 
-          onClick={() => {history.push({ pathname: "/goods/manage", state: { address: props.selectedGoods[0]} })}}
+          onClick={() => {
+            window.sessionStorage.setItem('budongsanState', JSON.stringify(props.state))
+            history.push({ pathname: "/goods/manage", state: { address: props.selectedGoods[0]} })}}
         >
           매물 수정
         </Button>
@@ -266,6 +270,7 @@ function CustomToolbar(props) {
 
 function GoodsViewPageBase() {
   const [searchText, setSearchText] = React.useState('');
+  const [sortStandard, setSortStandard] = React.useState({});
   const [selectedGoods, setSelectedGoods] = React.useState([]);
   const [rows, setRows] = React.useState([]);
   const [data, setData] = React.useState([]);
@@ -275,6 +280,39 @@ function GoodsViewPageBase() {
     height: window.innerHeight
   });
 
+  const useMutationObserver = (domNodeSelector, observerOptions, cb) => {
+    React.useEffect(() => {
+      const targetNode = document.querySelector(domNodeSelector);
+      
+      const observer = new MutationObserver(cb);
+      
+      observer.observe(targetNode, observerOptions);
+      
+      return () => {
+        observer.disconnect();
+      };
+    }, [domNodeSelector, observerOptions, cb]);
+  }
+  
+  const useSave = () => {    
+    const handler = React.useCallback(mutationList => { 
+      mutationList.forEach(mutation => {
+        if (mutation.type === 'attributes' && (mutation.target.className.includes('sorted'))) {
+          setSortStandard({ innerText : mutation.target.innerText, ariaSort : mutation.target.ariaSort })
+        } else if (mutation.type === 'attributes' && mutation.target.className.includes('sortable')) {
+          setSortStandard({ innerText : mutation.target.innerText, ariaSort : mutation.target.ariaSort })
+        }
+      });
+    }, []);
+  
+    const config = {
+      attributes: true,
+      subtree: true,
+    }
+    
+    useMutationObserver('html', config, handler);
+  };
+  
   React.useEffect(() => {
     window.addEventListener('resize', handleResize);
     getDataFromFirebase();
@@ -283,11 +321,42 @@ function GoodsViewPageBase() {
     }
   }, []);
 
+  React.useEffect(() => {
+    if (data.length > 0) {
+      getSettings()
+    }
+  }, [data])
+
   const handleResize = () => {
     setWindowSize({
       width: window.innerWidth,
       height: window.innerHeight
     })
+  }
+
+  const getSettings = () => {
+    if (window.sessionStorage.budongsanState) {
+      const state = JSON.parse(window.sessionStorage.budongsanState);
+      const text = state.searchText;
+      const innerText = state.sortStandard.innerText;
+      const ariaSort = state.sortStandard.ariaSort;
+      
+      setTimeout(function() {
+        const searchInput = document.querySelector(".MuiInput-input")
+        const headerList = document.querySelectorAll(".MuiDataGrid-columnHeader")
+        requestSearch(text)
+        headerList.forEach((header) => {
+          if (header.innerText === innerText) {
+            if (ariaSort === 'descending') {
+              header.click()
+              header.click()
+            } else if (ariaSort === 'ascending') {
+              header.click()
+            }
+          }
+        })
+      }, 1000)
+    }
   }
 
   const requestSearch = (searchValue) => {
@@ -339,6 +408,8 @@ function GoodsViewPageBase() {
     })
   }
 
+  useSave()
+
   if (windowSize.width < 700) {
     return (
       <ThemeProvider theme={theme}>
@@ -377,7 +448,8 @@ function GoodsViewPageBase() {
                     selectedGoods: selectedGoods,
                     onChange: (event) => requestSearch(event.target.value),
                     clearSearch: () => requestSearch(''),
-                    getDataFromFirebase: () => getDataFromFirebase()
+                    getDataFromFirebase: () => getDataFromFirebase(),
+                    state : { searchText : searchText, sortStandard : sortStandard }
                   },
                 }}
               />

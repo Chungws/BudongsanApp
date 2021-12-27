@@ -462,7 +462,7 @@ function GoodsManageBase() {
               noValidate
               autoComplete="off"
             >
-              <TextField fullWidth name='etc' label="비고" value={state.etc} onChange={onChange}/>
+              <TextField fullWidth multiline name='etc' label="비고" value={state.etc} onChange={onChange}/>
               <div style={{ height : 10}} />
               <TextField
                 fullWidth
