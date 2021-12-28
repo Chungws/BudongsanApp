@@ -342,7 +342,6 @@ function GoodsViewPageBase() {
       const ariaSort = state.sortStandard.ariaSort;
       
       setTimeout(function() {
-        const searchInput = document.querySelector(".MuiInput-input")
         const headerList = document.querySelectorAll(".MuiDataGrid-columnHeader")
         requestSearch(text)
         headerList.forEach((header) => {

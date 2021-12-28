@@ -99,7 +99,10 @@ class ImageInfoModal extends Component {
                   { documentUrls.length > 0 ?
                     documentUrls.map((url) => (
                       <ImageContainer style={{ justifyContent : 'flex-end'}}>
-                        <ArticleIcon sx={{ width : 400, height : 400, margin : 'auto', cursor : 'pointer' }} src={url} onClick={() => window.open(`/hwpview?${url}`, '_blank', `width=${window.innerWidth}, height=${window.innerHeight}`)}/>
+                        { url.includes('.pdf') ? 
+                          <ArticleIcon sx={{ width : 400, height : 400, margin : 'auto', cursor : 'pointer' }} src={url} onClick={() => window.open( url, '_blank', `width=${window.innerWidth}, height=${window.innerHeight}`)}/> : 
+                          <ArticleIcon sx={{ width : 400, height : 400, margin : 'auto', cursor : 'pointer' }} src={url} onClick={() => window.open(`/hwpview?${url}`, '_blank', `width=${window.innerWidth}, height=${window.innerHeight}`)}/>
+                        }
                         <Typography>{decodeURI(this.getFileName(url))}</Typography>
                         <Button variant="contained" color="primary" onClick={() => this.downloadImage(url)}>저장</Button>
                       </ImageContainer>

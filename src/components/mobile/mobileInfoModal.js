@@ -10,6 +10,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import CircularProgress from '@mui/material/CircularProgress';
+import ArticleIcon from '@mui/icons-material/Article';
 
 import AreaInfoModal from '../areaInfoModal';
 import PriceInfoModal from '../priceInfoModal';
@@ -49,6 +50,7 @@ class MobileInfoModal extends Component {
     super(props);
     this.state = {
       imageUrls: [],
+      documentUrls: [],
       open: false,
       loading: false,
     }
@@ -59,14 +61,14 @@ class MobileInfoModal extends Component {
   }
 
   render() {
-    const { imageUrls, loading } = this.state;
+    const { imageUrls, documentUrls, loading } = this.state;
 
     return (
       <div style={{width : 'inherit'}}>
         <Button color='inherit' fullWidth onClick={this.handleClickOpen} style={{justifyContent: "flex-start", textTransform: 'none'}}>
           {this.props.data.id}
         </Button>
-        <Dialog onClose={this.handleClose} open={this.state.open} fullWidth maxWidth={imageUrls.length > 0 ? 'xl' : 'xs'} scroll='paper'>
+        <Dialog onClose={this.handleClose} open={this.state.open} fullWidth maxWidth={imageUrls.length > 0 || documentUrls.length > 0 ? 'xl' : 'xs'} scroll='paper'>
           <DialogTitle onClose={this.handleClose}>
             매물 정보
           </DialogTitle>
@@ -78,7 +80,8 @@ class MobileInfoModal extends Component {
               :
               <div>
                 {this.renderInfo()}
-                {this.renderImage()}
+                <div style={{height : 8}} />
+                {this.renderFile()}
               </div>
             }
           </DialogContent>
@@ -95,8 +98,8 @@ class MobileInfoModal extends Component {
     )
   }
 
-  renderImage = () => {
-    const { imageUrls } = this.state;
+  renderFile = () => {
+    const { documentUrls, imageUrls } = this.state;
     return (
       <ImageListContainer>
         { imageUrls.length > 0 ?
@@ -104,10 +107,24 @@ class MobileInfoModal extends Component {
             <ImageContainer>
               <Image src={url} />
               <div style={{ height : 5 }} />
-              <Button variant="contained" color="primary" onClick={() => this.downloadImage(url)}>저장</Button>
+              <Button variant="contained" color="primary" onClick={() => this.downloadFile(url)}>저장</Button>
             </ImageContainer>
           ))
           : <Typography>사진이 없습니다</Typography>
+        }
+        <div style={{height : 8}} />
+        { documentUrls.length > 0 ?
+          documentUrls.map((url) => (
+            <ImageContainer style={{ justifyContent : 'flex-end'}}>
+              { url.includes('.pdf') ? 
+                <ArticleIcon sx={{ width : 400, height : 400, margin : 'auto', cursor : 'pointer' }} src={url} onClick={() => window.open( url, '_blank', `width=${window.innerWidth}, height=${window.innerHeight}`)}/> : 
+                <ArticleIcon sx={{ width : 400, height : 400, margin : 'auto', cursor : 'pointer' }} src={url} onClick={() => window.open(`/hwpview?${url}`, '_blank', `width=${window.innerWidth}, height=${window.innerHeight}`)}/>
+              }
+              <Typography>{decodeURI(this.getFileName(url))}</Typography>
+              <Button variant="contained" color="primary" onClick={() => this.downloadFile(url)}>저장</Button>
+            </ImageContainer>
+          ))
+          : <Typography>문서가 없습니다</Typography>
         }
       </ImageListContainer>
     )
@@ -156,26 +173,48 @@ class MobileInfoModal extends Component {
     )
   }
 
-  getImageUrls = (address) => {
+  getFileName = (url) => {
+    const fileName = url.split('%2F')[2].split('?')[0]
+    return fileName
+  }
+
+  getFileUrls = (address) => {
     storage.ref().child(`images/${address}`).listAll()
     .then((res) => {
       let promises = [];
-      res.items.forEach((item) => {promises.push(item.getDownloadURL())})
+      res.items.forEach((item) => {
+        promises.push(item.getDownloadURL())
+      })
       return Promise.all(promises)
+    }).then((urls) => {
+      let imageUrls = [];
+      let documentUrls = [];
+      urls.forEach((url) => {
+        if (url.includes('.pdf') || url.includes('.hwp')) {
+          documentUrls.push(url)
+        } else {
+          imageUrls.push(url)
+        }
+      })
+      return {imageUrls : imageUrls, documentUrls : documentUrls}
     })
-    .then((downloadUrls) => {
-      this.setState({ imageUrls : downloadUrls }, () => this.setState({ loading : false }))
+    .then((res) => {
+      console.log('파일 불러오기 성공')
+      this.setState({ loading : false, imageUrls : res.imageUrls, documentUrls : res.documentUrls })
+    })
+    .catch((error) => {
+      console.log('파일 불러오기 실패')
     })
   }
 
-  downloadImage = (url) => {
+  downloadFile = (url) => {
     const fileName = url.split("%2F")[2].split('?')[0];
     var xhr = new XMLHttpRequest();
     xhr.responseType = 'blob';
     xhr.onload = function(event) {
       var a = document.createElement('a');
       a.href = window.URL.createObjectURL(xhr.response);
-      a.download = fileName;
+      a.download = decodeURI(fileName);
       a.style.display = 'none';
       document.body.appendChild(a);
       a.click();
@@ -186,16 +225,17 @@ class MobileInfoModal extends Component {
 
   shareData = async () => {
     const { data } = this.props;
-    const filesArray = await Promise.all(this.state.imageUrls.map((url) => {return (this.convertURLtoFile(url))}))
+    const imageFilesArray = await Promise.all(this.state.imageUrls.map((url) => {return (this.convertURLtoImageFile(url))}))
+    const documentFilesArray = await Promise.all(this.state.documentUrls.filter((url) => url.includes('.pdf')).map((pdfurl) => {return (this.convertURLtoDocumentFile(pdfurl))}))
+    const filesArray = imageFilesArray.concat(documentFilesArray);
 
     if (typeof navigator.share === 'undefined') {
       alert('공유하기를 지원하지 않는 환경입니다')
     } else {
       try {
-        console.log(filesArray)
         await navigator.share({
           title: `주소 : ${data.address}\n`,
-          text: `용도 : ${data.yongdo}\n매매가 : ${data.price.totalprice}\n대지면적 : ${data.area.landarea}\n연면적 : ${data.area.floorarea}\n건축년도 : ${data.area.years}\n층수 : ${data.area.floors}\n보증금 : ${data.deposit}\n월세 : ${data.monthly}`,
+          text: `용도 : ${data.yongdo}\n매매가 : ${data.price.totalprice}\n대지면적 : ${data.area.landarea}\n연면적 : ${data.area.floorarea}\n건축년도 : ${data.area.years}\n층수 : ${data.area.floors}\n보증금 : ${data.deposit}\n월세 : ${data.monthly}\n비고 : ${data.etc}`,
           files: filesArray
         });
         console.log('공유 성공')
@@ -205,17 +245,25 @@ class MobileInfoModal extends Component {
     }
   }
 
-  convertURLtoFile = async (url) => {
+  convertURLtoImageFile = async (url) => {
     const response = await fetch(url);
     const data = await response.blob();
-    const filename = url.split("%2F")[2].split('?')[0] + '.jpeg';
+    const filename = decodeURI(url.split("%2F")[2].split('?')[0]) + '.jpeg';
     return new File([data], filename, {type: 'image/jpeg'});
+  }
+
+  convertURLtoDocumentFile = async (url) => {
+    const response = await fetch(url);
+    const data = await response.blob();
+    const type = url.includes('.pdf') ? 'application/pdf' : 'application/haansofthwp';
+    const filename = decodeURI(url.split("%2F")[2].split('?')[0]);
+    return new File([data], filename, {type: type});
   }
   
   handleClickOpen=()=> {
     this.setState({
       open: true
-    },() => this.getImageUrls(this.props.data.address));
+    },() => this.getFileUrls(this.props.data.address));
   }
 
   handleClose=()=> {
