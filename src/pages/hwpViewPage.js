@@ -1,10 +1,11 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react'
-import { withRouter } from 'react-router-dom';
+import { withRouter, useLocation } from 'react-router-dom';
 import CircularProgress from '@mui/material/CircularProgress';
 import { Viewer } from 'hwp.js';
 
 function HWPViewerPage() {
-  const url = window.location.href.split('?')[1] + '?' + window.location.href.split('?')[2];
+  //const url = window.location.href.split('?')[1] + '?' + window.location.href.split('?')[2];
+  const url2 = useLocation().state.url
   const ref = useRef(null);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
@@ -39,7 +40,7 @@ function HWPViewerPage() {
       setIsLoading(false)
       showViewer(new File([xhr.response], 'random'))
     };
-    xhr.open('GET', url);
+    xhr.open('GET', url2);
     xhr.send();
   }, [])
 

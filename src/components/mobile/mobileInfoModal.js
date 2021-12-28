@@ -118,7 +118,13 @@ class MobileInfoModal extends Component {
             <ImageContainer style={{ justifyContent : 'flex-end'}}>
               { url.includes('.pdf') ? 
                 <ArticleIcon sx={{ width : 400, height : 400, margin : 'auto', cursor : 'pointer' }} src={url} onClick={() => window.open( url, '_blank', `width=${window.innerWidth}, height=${window.innerHeight}`)}/> : 
-                <ArticleIcon sx={{ width : 400, height : 400, margin : 'auto', cursor : 'pointer' }} src={url} onClick={() => window.open(`/hwpview?${url}`, '_blank', `width=${window.innerWidth}, height=${window.innerHeight}`)}/>
+                <ArticleIcon sx={{ width : 400, height : 400, margin : 'auto', cursor : 'pointer' }} onClick={() => this.props.history.push({
+                  pathname : "/hwpview", 
+                  state : { 
+                    url : url
+                  },
+                })}/>
+                //window.open(`/hwpview?${url}`, '_blank', `width=${window.innerWidth}, height=${window.innerHeight}`)
               }
               <Typography>{decodeURI(this.getFileName(url))}</Typography>
               <Button variant="contained" color="primary" onClick={() => this.downloadFile(url)}>저장</Button>

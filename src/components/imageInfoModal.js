@@ -1,4 +1,5 @@
 import React, {Component} from 'react';
+import { withRouter } from "react-router-dom";
 import { storage } from '../firebase';
 import Styled from 'styled-components';
 import Button from '@mui/material/Button';
@@ -101,7 +102,12 @@ class ImageInfoModal extends Component {
                       <ImageContainer style={{ justifyContent : 'flex-end'}}>
                         { url.includes('.pdf') ? 
                           <ArticleIcon sx={{ width : 400, height : 400, margin : 'auto', cursor : 'pointer' }} src={url} onClick={() => window.open( url, '_blank', `width=${window.innerWidth}, height=${window.innerHeight}`)}/> : 
-                          <ArticleIcon sx={{ width : 400, height : 400, margin : 'auto', cursor : 'pointer' }} src={url} onClick={() => window.open(`/hwpview?${url}`, '_blank', `width=${window.innerWidth}, height=${window.innerHeight}`)}/>
+                          <ArticleIcon sx={{ width : 400, height : 400, margin : 'auto', cursor : 'pointer' }} onClick={() => this.props.history.push({
+                            pathname : "/hwpview", 
+                            state : { 
+                              url : url
+                            },
+                          })}/>
                         }
                         <Typography>{decodeURI(this.getFileName(url))}</Typography>
                         <Button variant="contained" color="primary" onClick={() => this.downloadImage(url)}>저장</Button>
@@ -170,4 +176,4 @@ class ImageInfoModal extends Component {
     }
   }
       
-  export default ImageInfoModal;
+  export default withRouter(ImageInfoModal);
