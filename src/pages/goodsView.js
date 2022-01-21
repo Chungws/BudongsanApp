@@ -297,9 +297,9 @@ function GoodsViewPageBase() {
   const useSave = () => {    
     const handler = React.useCallback(mutationList => { 
       mutationList.forEach(mutation => {
-        if (mutation.type === 'attributes' && (mutation.target.className.includes('sorted'))) {
+        if (mutation.type === 'attributes' && typeof mutation.target.className.includes !== 'undefined' && mutation.target.className && (mutation.target.className.includes('sorted'))) {
           setSortStandard({ innerText : mutation.target.innerText, ariaSort : mutation.target.ariaSort })
-        } else if (mutation.type === 'attributes' && mutation.target.className.includes('sortable')) {
+        } else if (mutation.type === 'attributes' && mutation.target.className && typeof mutation.target.className.includes !== 'undefined' && mutation.target.className.includes('sortable')) {
           setSortStandard({ innerText : mutation.target.innerText, ariaSort : mutation.target.ariaSort })
         }
       });

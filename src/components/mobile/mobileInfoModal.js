@@ -11,6 +11,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import CircularProgress from '@mui/material/CircularProgress';
 import ArticleIcon from '@mui/icons-material/Article';
+import Chip from '@mui/material/Chip';
 
 import AreaInfoModal from '../areaInfoModal';
 import PriceInfoModal from '../priceInfoModal';
@@ -65,8 +66,9 @@ class MobileInfoModal extends Component {
 
     return (
       <div style={{width : 'inherit'}}>
-        <Button color='inherit' fullWidth onClick={this.handleClickOpen} style={{justifyContent: "flex-start", textTransform: 'none'}}>
+        <Button color='inherit' fullWidth onClick={this.handleClickOpen} style={{justifyContent: "space-between", textTransform: 'none'}}>
           {this.props.data.id}
+          <Chip label={this.props.data.division} variant="outlined" style={{ cursor: 'inherit' }}/>
         </Button>
         <Dialog onClose={this.handleClose} open={this.state.open} fullWidth maxWidth={imageUrls.length > 0 || documentUrls.length > 0 ? 'xl' : 'xs'} scroll='paper'>
           <DialogTitle onClose={this.handleClose}>

@@ -13,6 +13,10 @@ import Typography from '@mui/material/Typography';
 import AddIcon from '@mui/icons-material/Add';
 import ClearIcon from '@mui/icons-material/Clear';
 import SearchIcon from '@mui/icons-material/Search';
+import FormControl from '@mui/material/FormControl';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import InputLabel from '@mui/material/InputLabel';
 
 import MobileInfoModal from '../../components/mobile/mobileInfoModal';
 
@@ -35,6 +39,7 @@ export default function GoodsViewMobilePage({data, refresh}) {
   const history = useHistory();
   const [searchTerm, setSearchTerm] = React.useState("");
   const [searchResults, setSearchResults] = React.useState([]);
+  const [selectedDivision, setSelectedDivision] = React.useState('');
   const addressList = data.map((info) => {return info.id})
   
   React.useEffect(() => {
@@ -42,14 +47,20 @@ export default function GoodsViewMobilePage({data, refresh}) {
   }, []);
 
   React.useEffect(() => {
-    const results = addressList.filter((item) =>
-      item.toLowerCase().includes(searchTerm)
-    );
+    const results = data.filter((info) => 
+      info.division.toLowerCase().includes(selectedDivision)
+    ).filter((item) =>
+      item.id.toLowerCase().includes(searchTerm)
+    ).map((data) => {return data.id});
     setSearchResults(results);
-  }, [searchTerm]);
+  }, [searchTerm, selectedDivision]);
   
   const handleChange = event => {
     setSearchTerm(event.target.value);
+  };
+
+  const handleChangeDivision = event => {
+    setSelectedDivision(event.target.value);
   };
 
   return (
@@ -59,37 +70,49 @@ export default function GoodsViewMobilePage({data, refresh}) {
         <Fab sx={{position : 'absolute', bottom : 16, right : 16, zIndex : 'tooltip'}} color="primary" onClick={() => {history.push({ pathname: "/goods/manage", state: { address: '' } })}}>
           <AddIcon/>
         </Fab>
-        <TextField
-          variant="standard"
-          value={searchTerm}
-          onChange={handleChange}
-          placeholder="검색…"
-          InputProps={{
-            startAdornment: <SearchIcon />,
-            endAdornment: (
-              <IconButton
-                title="Clear"
-                aria-label="Clear"
-                size="small"
-                style={{ visibility: searchTerm ? 'visible' : 'hidden' }}
-                onClick={() => setSearchTerm('')}
-              >
-                <ClearIcon />
-              </IconButton>
-            ),
-          }}
-          sx={{
-            width: '100%',
-            m: (theme) => theme.spacing(1, 0, 1.5),
-            '& .MuiSvgIcon-root': {
-              mr: 0.5,
-            },
-            '& .MuiInput-underline:before': {
-              borderBottom: 1,
-              borderColor: 'divider',
-            },
-          }}
-        />
+        <Box sx={{ display : 'flex', flexDirection : 'row', alignItems : 'center', justifyContent : 'space-between' }}>
+          <TextField
+            variant="standard"
+            value={searchTerm}
+            onChange={handleChange}
+            placeholder="검색…"
+            InputProps={{
+              startAdornment: <SearchIcon />,
+              endAdornment: (
+                <IconButton
+                  title="Clear"
+                  aria-label="Clear"
+                  size="small"
+                  style={{ visibility: searchTerm ? 'visible' : 'hidden' }}
+                  onClick={() => setSearchTerm('')}
+                >
+                  <ClearIcon />
+                </IconButton>
+              ),
+            }}
+            sx={{
+              marginTop : 'auto',
+              width : 'calc(100% - 128px)',
+            }}
+          />
+          {/* <div style={{ width : 8 }} /> */}
+          <FormControl fullWidth sx={{ width : 120 }}>
+            <InputLabel>구분</InputLabel>
+            <Select
+              value={selectedDivision}
+              label="구분"
+              onChange={handleChangeDivision}
+            >
+              <MenuItem value={''}>전체</MenuItem>
+              <MenuItem value={'건물'}>건물</MenuItem>
+              <MenuItem value={'토지'}>토지</MenuItem>
+              <MenuItem value={'빌딩'}>빌딩</MenuItem>
+              <MenuItem value={'다가구'}>다가구</MenuItem>
+              <MenuItem value={'상가'}>상가</MenuItem>
+              <MenuItem value={'단독'}>단독</MenuItem>
+            </Select>
+          </FormControl>
+        </Box>
         <nav aria-label="goodslist">
           <List sx={{ maxHeight : window.innerHeight-122, position: 'relative', overflow: 'auto', }}>
             {
