@@ -49,10 +49,10 @@ const Wrapper = Styled.div`
 `
 
 const columns = [
-  { field: 'date', headerName: '날짜' , width: 100 },
-  { field: 'division', headerName: '구분' , width: 120, renderCell: renderCellExpand },
+  { field: 'updatedAt', headerName: '수정일자' , width: 100 },
+  { field: 'division', headerName: '구분' , width: 100, renderCell: renderCellExpand },
   { field: 'address', headerName: '소재지' , width: 220, renderCell: renderCellExpand },
-  { field: 'yongdo', headerName: '용도지역' , width: 100 },
+  { field: 'yongdo', headerName: '용도' , width: 90 },
   { field: 'area', headerName: '대지' , width: 100, renderCell: (params) => ( <ThemeProvider theme={theme}><AreaInfoModal area = {params.value}/></ThemeProvider> ), 
     align: 'right', headerAlign: 'right',
     sortComparator: (v1, v2, param1, param2) => (
@@ -67,6 +67,7 @@ const columns = [
       param2.api.getCellValue(param2.id, 'price').totalprice
     )
   },
+  { field: 'pyungprice', headerName: '평단가' , width: 90, align: 'right', headerAlign: 'right', renderCell: (params) => ( <NumberFormat value={params.value} displayType={'text'} thousandSeparator={true} /> ) },
   { field: 'deposit', headerName: '보증금' , width: 100, align: 'right', headerAlign: 'right', renderCell: (params) => ( <NumberFormat value={params.value} displayType={'text'} thousandSeparator={true} /> ) },
   { field: 'monthly', headerName: '월세' , width: 100, align: 'right', headerAlign: 'right', renderCell: (params) => ( <NumberFormat value={params.value} displayType={'text'} thousandSeparator={true} /> ) },
   { field: 'rentalstatus', headerName: '임대현황' , width: 120, align: 'center', headerAlign: 'center', sortable: false,
@@ -382,11 +383,13 @@ function GoodsViewPageBase() {
   
         rowList.push({
           id : id, 
+          updatedAt: data.updatedAt || data.date,
           date: data.date,
           address: data.address,
           area: data.area,
           landarea: Number(data.area.landarea),
           price: data.price,
+          pyungprice: Number(data.price.pyungprice),
           totalprice: Number(data.price.totalprice),
           division: data.division,
           deposit: Number(data.deposit),

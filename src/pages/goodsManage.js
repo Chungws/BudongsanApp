@@ -17,6 +17,7 @@ import AdapterDateFns from '@mui/lab/AdapterDateFns';
 import DesktopDatePicker from '@mui/lab/DesktopDatePicker';
 import CircularProgress from '@mui/material/CircularProgress';
 import ArticleIcon from '@mui/icons-material/Article';
+import Autocomplete from '@mui/material/Autocomplete';
 
 import ImageUploadModal from '../components/imageUploadModal';
 
@@ -62,6 +63,60 @@ const Image = Styled.img`
   height: 90%;
   margin: 10;
 `
+
+const DIVISION = [
+  {
+    value: '단독',
+    label: '단독'
+  },
+  {
+    value: '다가구',
+    label: '다가구'
+  },
+  {
+    value: '상가주택',
+    label: '상가주택'
+  },
+  {
+    value: '상가건물',
+    label: '상가건물'
+  },
+  {
+    value: '빌딩',
+    label: '빌딩'
+  },
+  {
+    value: '토지',
+    label: '토지'
+  },
+  {
+    value: '빌라부지',
+    label: '빌라부지'
+  }
+];
+
+const YONGDO = [
+  {
+    value: '상업지역',
+    label: '상업지역'
+  },
+  {
+    value: '준주거',
+    label: '준주거'
+  },
+  {
+    value: '3종주거',
+    label: '3종주거'
+  },
+  {
+    value: '2종주거',
+    label: '2종주거'
+  },
+  {
+    value: '준공업지',
+    label: '준공업지'
+  }
+]
 
 const theme = createTheme({
   typography: {
@@ -219,12 +274,20 @@ function GoodsManageBase() {
   }
 
   const saveGoods = () => {
-    setLoading(true)
+    setLoading(true);
+    const updatedAt = dayjs().format("YYYY.MM.DD");
     let promises = [];
+
+    if (address && address !== state.address) {
+      promises.push(
+        db.ref(`goods/${address}`).remove()
+      );
+    }
 
     promises.push(
       db.ref(`goods/${state.address.replace(/^\s+|\s+$/gm,'')}`)
       .set({
+        updatedAt,
         date: state.date,
         division: state.division,
         address: state.address.replace(/^\s+|\s+$/gm,''),
@@ -399,7 +462,7 @@ function GoodsManageBase() {
               <Typography variant={windowSize.width < 700 ? "h5" :"h4"} style={{margin : 8}}>매물 관리</Typography>
               <LocalizationProvider dateAdapter={AdapterDateFns} locale={ko}>
                 <DesktopDatePicker
-                  label={"일자"}
+                  label={"접수일자"}
                   value={state.date}
                   placeholder={"연도.월.일"}
                   inputFormat={"yyyy.MM.dd"}
@@ -411,10 +474,31 @@ function GoodsManageBase() {
                   renderInput={(params) => <TextField {...params} error={false} helperText={'연도(YYYY).월(MM).일(DD)'}/>}
                 />
               </LocalizationProvider>
-              <TextField name='division' label="구분" value = {state.division} onChange={onChange}/>
               <TextField name='address' required label="주소" value = {state.address} onChange={onChange} 
-                helperText={isUpdate ? '주소는 수정할 수 없습니다' : helpText} error={!isValidAddress} disabled={isUpdate}/>
-              <TextField name='yongdo' label="용도지역" value = {state.yongdo} onChange={onChange}/>
+                helperText={helpText} error={!isValidAddress}
+              />
+              <Autocomplete
+                name='division' 
+                freeSolo
+                options={DIVISION}
+                inputValue={state.division}
+                onInputChange={(e, newValue) => {
+                  setState({...state, division: newValue });
+                }}
+                renderInput={(params) => <TextField {...params} label="구분" />}
+                sx={{display: 'inline-flex'}}
+              />
+              <Autocomplete
+                name='yongdo' 
+                freeSolo
+                options={YONGDO}
+                inputValue={state.yongdo}
+                onInputChange={(e, newValue) => {
+                  setState({...state, yongdo: newValue });
+                }}
+                renderInput={(params) => <TextField {...params} label="용도" />}
+                sx={{display: 'inline-flex'}}
+              />
               <p></p>
               <TextField name='landarea' label="대지" value = {state.landarea} onChange={onChange}/>
               <TextField name='floorarea' label="연면적" value = {state.floorarea} onChange={onChange}/>
