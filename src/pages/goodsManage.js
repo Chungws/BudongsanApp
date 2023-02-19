@@ -278,6 +278,11 @@ function GoodsManageBase() {
     const updatedAt = dayjs().format("YYYY.MM.DD");
     let promises = [];
 
+    if (!state.address) {
+      alert("주소를 입력하시지 않으셨습니다!");
+      return;
+    }
+
     if (address && address !== state.address) {
       promises.push(
         db.ref(`goods/${address}`).remove()
